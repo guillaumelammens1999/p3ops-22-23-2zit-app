@@ -15,8 +15,7 @@ services:
             context: .
             dockerfile: Dockerfile
         ports:
-            - '80:80'
-            - '443:443'
+            - '4321:80'
         container_name: appsrv
         hostname: appsrv
         environment:
