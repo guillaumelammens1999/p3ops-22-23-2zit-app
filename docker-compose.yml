@@ -1,36 +1,79 @@
 version: '3.3'
+
 services:
-    mssql:
-        environment:
-            - ACCEPT_EULA=Y
-            - MSSQL_SA_PASSWORD=R0tieFAkor.123
-        ports:
-            - '1433:1433'
-        container_name: sql1
-        hostname: sql1
-        image: 'mcr.microsoft.com/mssql/server:2022-latest'
+  mssql:
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=R0tieFAkor.123
+    ports:
+      - '1433:1433'
+    container_name: sql1
+    hostname: sql1
+    image: 'mcr.microsoft.com/mssql/server:2022-latest'
+    healthcheck:
+      test: [ "CMD", "/opt/mssql-tools/bin/sqlcmd", "-U", "sa", "-P", "R0tieFAkor.123", "-Q", "SELECT 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-    applicationserver:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        ports:
-            - '4321:80'
-        container_name: appsrv
-        hostname: appsrv
-        environment:
-            - DOTNET_ENVIRONMENT=Production
-            - DOTNET_ConnectionStrings__SqlDatabase=Server=mssql;Database=mydbname;User Id=sa;Password=R0tieFAkor.123;
-        depends_on:
-            - mssql
+  applicationserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '4321:80'
+    container_name: appsrv
+    hostname: appsrv
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+      - DOTNET_ConnectionStrings__SqlDatabase=Server=mssql;Database=mydbname;User Id=sa;Password=R0tieFAkor.123;
+    depends_on:
+      mssql:
+        condition: service_healthy
 
-    nginx:
-        build: 
-            context: ./nginx
-            dockerfile: Dockerfile.nginx
-        ports:
-            - '80:80'
-            - '443:443'
-        depends_on:
-            - applicationserver
-        
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile.nginx
+    ports:
+      - '80:80'
+      - '443:443'
+    depends_on:
+      - applicationserver
+
+
+# version: '3.3'
+# services:
+#     mssql:
+#         environment:
+#             - ACCEPT_EULA=Y
+#             - MSSQL_SA_PASSWORD=R0tieFAkor.123
+#         ports:
+#             - '1433:1433'
+#         container_name: sql1
+#         hostname: sql1
+#         image: 'mcr.microsoft.com/mssql/server:2022-latest'
+
+#     applicationserver:
+#         build:
+#             context: .
+#             dockerfile: Dockerfile
+#         ports:
+#             - '4321:80'
+#         container_name: appsrv
+#         hostname: appsrv
+#         environment:
+#             - DOTNET_ENVIRONMENT=Production
+#             - DOTNET_ConnectionStrings__SqlDatabase=Server=mssql;Database=mydbname;User Id=sa;Password=R0tieFAkor.123;
+#         depends_on:
+#             - mssql
+
+#     nginx:
+#         build: 
+#             context: ./nginx
+#             dockerfile: Dockerfile.nginx
+#         ports:
+#             - '80:80'
+#             - '443:443'
+#         depends_on:
+#             - applicationserver
