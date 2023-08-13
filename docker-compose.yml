@@ -24,8 +24,11 @@ services:
             - DOTNET_ConnectionStrings__SqlDatabase=Server=mssql;Database=mydbname;User Id=sa;Password=R0tieFAkor.123;
         depends_on:
             - mssql
+
     nginx:
-        build: ./nginx
+        build: 
+            context: ./nginx
+            dockerfile: Dockerfile.nginx
         ports:
             - '80:80'
             - '443:443'
